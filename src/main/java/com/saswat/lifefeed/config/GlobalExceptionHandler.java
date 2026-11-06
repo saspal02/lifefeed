@@ -1,0 +1,89 @@
+package com.saswat.lifefeed.config;
+
+import static org.springframework.http.HttpStatus.*;
+
+import com.saswat.lifefeed.shared.BadRequestException;
+import com.saswat.lifefeed.shared.ResourceNotFoundException;
+import java.util.List;
+import org.jspecify.annotations.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+@RestControllerAdvice
+class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+    private static final Logger LOG = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    @ExceptionHandler(Exception.class)
+    ProblemDetail handle(Exception e) {
+        logger.error("Unhandled exception", e);
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(INTERNAL_SERVER_ERROR, e.getMessage());
+        problemDetail.setTitle("Internal Server Error");
+        problemDetail.setProperty("errors", List.of(e.getMessage()));
+        return problemDetail;
+    }
+
+    @Override
+    public ResponseEntity<Object> handleMethodArgumentNotValid(
+            @NonNull MethodArgumentNotValidException ex,
+            @NonNull HttpHeaders headers,
+            @NonNull HttpStatusCode status,
+            @NonNull WebRequest request) {
+        LOG.error("Validation error", ex);
+        var errors = ex.getAllErrors().stream()
+                .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                .toList();
+
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(BAD_REQUEST, ex.getMessage());
+        problemDetail.setTitle("Validation Error");
+        problemDetail.setProperty("errors", errors);
+        return ResponseEntity.status(BAD_REQUEST).body(problemDetail);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ProblemDetail handle(BadCredentialsException e) {
+        LOG.error("Bad credentials", e);
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(UNAUTHORIZED, e.getMessage());
+        problemDetail.setTitle("Unauthorized");
+        problemDetail.setProperty("errors", List.of(e.getMessage()));
+        return problemDetail;
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ProblemDetail handle(BadRequestException e) {
+        LOG.error("Bad request", e);
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(BAD_REQUEST, e.getMessage());
+        problemDetail.setTitle("Bad Request");
+        problemDetail.setProperty("errors", List.of(e.getMessage()));
+        return problemDetail;
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ProblemDetail handle(ResourceNotFoundException e) {
+        LOG.error("Resource not found", e);
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(NOT_FOUND, e.getMessage());
+        problemDetail.setTitle("Resource Not Found");
+        problemDetail.setProperty("errors", List.of(e.getMessage()));
+        return problemDetail;
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ProblemDetail handle(AccessDeniedException e) {
+        LOG.error("Access denied", e);
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(FORBIDDEN, e.getMessage());
+        problemDetail.setTitle("Access Denied");
+        problemDetail.setProperty("errors", List.of(e.getMessage()));
+        return problemDetail;
+    }
+}

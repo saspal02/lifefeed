@@ -1,0 +1,82 @@
+package com.saswat.lifefeed.users;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+import com.saswat.lifefeed.ApplicationProperties;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
+import javax.crypto.SecretKey;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
+
+@Component
+public class TokenHelper {
+    private static final Logger LOG = LoggerFactory.getLogger(TokenHelper.class);
+    private final ApplicationProperties props;
+
+    public TokenHelper(ApplicationProperties props) {
+        this.props = props;
+    }
+
+    public Boolean validateToken(String token, UserDetails userDetails) {
+        Claims claims = this.parseToken(token);
+        String username = claims.getSubject();
+        Date expiration = claims.getExpiration();
+        return username != null
+                && username.equals(userDetails.getUsername())
+                && userDetails.isEnabled()
+                && expiration.after(new Date());
+    }
+
+    public String getToken(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        String prefix = "Bearer ";
+        if (authHeader != null && authHeader.startsWith(prefix)) {
+            return authHeader.substring(prefix.length());
+        }
+        return null;
+    }
+
+    public String getUsernameFromToken(String token) {
+        try {
+            Claims claims = this.parseToken(token);
+            return claims.getSubject();
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
+        return null;
+    }
+
+    public AuthToken generateToken(String username) {
+        SecretKey key = Keys.hmacShaKeyFor(props.jwt().secret().getBytes(UTF_8));
+        Date issuedAt = new Date();
+        Date accessTokenExpiresAt = new Date(issuedAt.getTime() + props.jwt().expiresIn() * 1000);
+        Date refreshTokenExpiresAt = Date.from(issuedAt.toInstant().plus(7, ChronoUnit.DAYS));
+        String accessToken = generateToken(username, issuedAt, accessTokenExpiresAt);
+        String refreshToken = generateToken(username, issuedAt, refreshTokenExpiresAt);
+        return new AuthToken(accessToken, refreshToken);
+    }
+
+    public String generateToken(String username, Date issuedAt, Date expiresAt) {
+        SecretKey key = Keys.hmacShaKeyFor(props.jwt().secret().getBytes(UTF_8));
+        return Jwts.builder()
+                .issuer(props.jwt().issuer())
+                .subject(username)
+                .issuedAt(issuedAt)
+                .expiration(expiresAt)
+                .signWith(key)
+                .compact();
+    }
+
+    private Claims parseToken(String token) {
+        String secretString = props.jwt().secret();
+        SecretKey key = Keys.hmacShaKeyFor(secretString.getBytes(UTF_8));
+        return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
+    }
+}

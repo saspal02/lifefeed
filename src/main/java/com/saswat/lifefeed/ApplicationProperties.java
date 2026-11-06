@@ -1,0 +1,39 @@
+package com.saswat.lifefeed;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.DefaultValue;
+import org.springframework.validation.annotation.Validated;
+
+@ConfigurationProperties(prefix = "app")
+@Validated
+public record ApplicationProperties(
+        @Valid CorsProperties cors,
+        @Valid OpenApiProperties openApi,
+        @Valid JwtProperties jwt) {
+
+    public record CorsProperties(
+            @DefaultValue("/**") String pathPattern,
+            @DefaultValue("*") String allowedOrigins,
+            @DefaultValue("*") String allowedMethods,
+            @DefaultValue("*") String allowedHeaders) {}
+
+    public record OpenApiProperties(
+            @DefaultValue("Blog API") String title,
+
+            @DefaultValue("Blog API Swagger Documentation") String description,
+
+            @DefaultValue("v1.0.0") String version,
+            @Valid OpenApiProperties.Contact contact) {
+
+        public record Contact(
+                @DefaultValue("SivaLabs") String name,
+                @DefaultValue("support@sivalabs.in") String email) {}
+    }
+
+    public record JwtProperties(
+            @DefaultValue("lifefeed") String issuer,
+            @DefaultValue("604800") Long expiresIn,
+            @NotEmpty String secret) {}
+}

@@ -1,0 +1,19 @@
+# lifefeed
+
+## Prerequisites
+* JDK 25
+* Docker and Docker Compose
+* Your favourite IDE (Recommended: [IntelliJ IDEA](https://www.jetbrains.com/idea/))
+
+Install JDK, Maven, Gradle using [SDKMAN](https://sdkman.io/)
+
+```shell
+$ curl -s "https://get.sdkman.io" | bash
+$ source "$HOME/.sdkman/bin/sdkman-init.sh"
+$ sdk install java 25-tem
+# If using Gradle
+$ sdk install gradle
+# If using Maven
+$ sdk install maven
+```
+# lifefeed

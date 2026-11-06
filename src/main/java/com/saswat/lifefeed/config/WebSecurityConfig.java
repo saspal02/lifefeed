@@ -1,0 +1,49 @@
+package com.saswat.lifefeed.config;
+
+import com.saswat.lifefeed.users.JwtFilter;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+
+@Configuration
+@EnableWebSecurity
+class WebSecurityConfig {
+    private static final String[] PUBLIC_RESOURCES = {
+        "/favicon.ico", "/actuator/health/**", "/actuator/info/**", "/swagger-ui/**", "/v3/api-docs/**", "/error",
+    };
+
+    private final JwtFilter jwtFilter;
+
+    WebSecurityConfig(JwtFilter jwtFilter) {
+        this.jwtFilter = jwtFilter;
+    }
+
+    @Bean
+    SecurityFilterChain securityFilterChain(HttpSecurity http) {
+        String[] unsecuredPaths = {"/api/auth/login", "/api/auth/refresh"};
+        http.securityMatcher("/api/**");
+        http.csrf(CsrfConfigurer::disable);
+        http.authorizeHttpRequests(auth -> auth.requestMatchers(PUBLIC_RESOURCES)
+                .permitAll()
+                .requestMatchers(HttpMethod.OPTIONS, "/**")
+                .permitAll()
+                .requestMatchers(unsecuredPaths)
+                .permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/users")
+                .permitAll()
+                .anyRequest()
+                .permitAll());
+        http.addFilterBefore(jwtFilter, BasicAuthenticationFilter.class);
+        http.exceptionHandling(c -> c.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)));
+        http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        return http.build();
+    }
+}

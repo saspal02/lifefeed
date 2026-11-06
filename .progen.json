@@ -1,0 +1,20 @@
+{
+ "AppType": "REST API",
+ "AppName": "lifefeed",
+ "GroupID": "com.saswat",
+ "ArtifactID": "lifefeed",
+ "AppVersion": "1.0.0",
+ "BasePackage": "com.saswat.lifefeed",
+ "BuildTool": "Maven",
+ "PersistenceType": "Spring Data JPA",
+ "DbType": "PostgreSQL",
+ "DbMigrationTool": "Flyway",
+ "SpringCloudAWSSupport": false,
+ "ThymeleafSupport": false,
+ "HTMXSupport": false,
+ "EmailSupport": false,
+ "RabbitMQSupport": false,
+ "RedisCachingSupport": false,
+ "OpenTelemetrySupport": false,
+ "K8sSupport": false
+}

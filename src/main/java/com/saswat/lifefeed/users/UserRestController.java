@@ -1,0 +1,60 @@
+package com.saswat.lifefeed.users;
+
+import static org.springframework.http.HttpStatus.CREATED;
+
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/users")
+class UserRestController {
+    private static final Logger LOG = LoggerFactory.getLogger(UserRestController.class);
+
+    private final UserService userService;
+
+    UserRestController(UserService userService) {
+        this.userService = userService;
+    }
+
+    @PostMapping
+    ResponseEntity<RegistrationResponse> creatUser(@RequestBody @Valid RegistrationRequest req) {
+        LOG.info("Registration request for email: {}", req.email());
+        var cmd = new CreateUserCmd(req.name(), req.email(), req.password(), Role.ROLE_USER);
+        userService.createUser(cmd);
+        var response = new RegistrationResponse(req.name(), req.email(), Role.ROLE_USER);
+        return ResponseEntity.status(CREATED.value()).body(response);
+    }
+
+    @PutMapping("/me")
+    @SecurityRequirement(name = "Bearer")
+    ResponseEntity<Void> updateUser(@RequestBody @Valid UpdateUserRequest request) {
+        var currentUserId = AuthUtils.getCurrentUserIdOrThrow();
+        var cmd = new UpdateUserCmd(request.name());
+        userService.updateUser(currentUserId, cmd);
+        return ResponseEntity.ok().build();
+    }
+
+    public record RegistrationRequest(
+            @NotBlank(message = "Name is required") String name,
+
+            @NotBlank(message = "Email is required") @Email(message = "Invalid email address")
+            String email,
+
+            @NotBlank(message = "Password is required") String password) {}
+
+    public record RegistrationResponse(String name, String email, Role role) {}
+
+    public record UpdateUserRequest(
+            @NotBlank(message = "Name must not be empty")
+            @Size(min = 2, max = 100, message = "Name must be between 2 and 100 characters")
+            @Pattern(regexp = "^[a-zA-Z\\s'-]+$", message = "Name contains invalid characters")
+            String name) {}
+}
