@@ -1,0 +1,56 @@
+package dev.saswat.lifefeed.users;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import dev.saswat.lifefeed.BaseIT;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.jdbc.Sql;
+
+@Sql("/test-data.sql")
+class UserRestControllerTests extends BaseIT {
+
+    @Test
+    void shouldCreateUserSuccessfully() {
+        UserRestController.RegistrationResponse response = restTestClient
+                .post()
+                .uri("/api/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("""
+                            {
+                              "name":"User123",
+                              "email":"user123@gmail.com",
+                              "password":"secret"
+                            }
+                            """)
+                .exchange()
+                .expectStatus()
+                .isCreated()
+                .returnResult(UserRestController.RegistrationResponse.class)
+                .getResponseBody();
+
+        assertThat(response).isNotNull();
+        assertThat(response.role()).isEqualTo(Role.ROLE_USER);
+        assertThat(response.email()).isEqualTo("user123@gmail.com");
+        assertThat(response.name()).isEqualTo("User123");
+    }
+
+    @Test
+    void shouldUpdateUserProfile() {
+        String token = getAuthToken("admin@gmail.com", "admin");
+
+        restTestClient
+                .put()
+                .uri("/api/users/me")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body("""
+                        {
+                          "name": "Admin Updated"
+                        }
+                        """)
+                .exchange()
+                .expectStatus()
+                .isOk();
+    }
+}
