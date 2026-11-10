@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "skills": {
+    "apply-renovate-prs": {
+      "source": "sivaprasadreddy/sivalabs-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/apply-renovate-prs/SKILL.md",
+      "computedHash": "549841f40546a48403d13f08509258c6156388a24c92dcb269e1eb0022929019"
+    },
+    "java-code-review": {
+      "source": "sivaprasadreddy/sivalabs-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/java-code-review/SKILL.md",
+      "computedHash": "871db977a976ca187576d1bfdb39a8623a1ccac59756a2e57000babd6b7dd77d"
+    },
+    "jspecify-skill": {
+      "source": "sivaprasadreddy/sivalabs-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/jspecify/SKILL.md",
+      "computedHash": "9d0817bea550fbf78d580df3dce57955910d926831d379595476904e72e28f68"
+    },
+    "pair-programming": {
+      "source": "sivaprasadreddy/sivalabs-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/pair-programming/SKILL.md",
+      "computedHash": "2afd184e4ae12e9aebf1d4ee2a94d6ae2e22fb5d7278ad28290c77d7d4c7cda9"
+    },
+    "spring-boot-skill": {
+      "source": "sivaprasadreddy/sivalabs-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/spring-boot/SKILL.md",
+      "computedHash": "5826d6bd25f2ec775cd38ead5b5524608c00182a27918f39dda30eb08187659f"
+    }
+  }
+}
