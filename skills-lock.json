@@ -30,6 +30,12 @@
       "sourceType": "github",
       "skillPath": "skills/spring-boot/SKILL.md",
       "computedHash": "5826d6bd25f2ec775cd38ead5b5524608c00182a27918f39dda30eb08187659f"
+    },
+    "spring-modulith-verifier": {
+      "source": "sivaprasadreddy/sivalabs-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/spring-modulith-verifier/SKILL.md",
+      "computedHash": "b6273a5169f72af3eb1a725a4eeeedd4fff39aec44d2e7e78c2b50729739ccfb"
     }
   }
 }
